@@ -1,0 +1,14 @@
+[core_router]
+core-router ansible_host=  #still need to figure ips, template purposes
+
+[distribution_switches]
+distribution-switch-1 ansible_host=
+distribution-switch-2 ansible_host=
+distribution-switch-3 ansible_host=
+distribution-switch-4 ansible_host=
+
+[access_switches]
+access-switch-1 ansible_host=
+access-switch-2 ansible_host=
+access-switch-3 ansible_host=
+access-switch-4 ansible_host=
