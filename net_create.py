@@ -23,27 +23,15 @@ def namespace_exists(namespace: str):
         print(e)
 
 
-# Namespace
-print(f"Setting up the network namespaces")
-namespaces = ["ohost", "phost", "whost", "yhost", "prouter", "yrouter", "wrouter", "orouter", "crouter"]
-for namespace in namespaces:
-    namespace_exists(namespace)
-
-# Ethernet bridges
-print(f"Setting Ethernet Bridges")
-bridges = ["pbridge", "obridge", "ybridge", "wbridge"]
-for bridge in bridges:
-    run(["sudo", "ip", "link", "add", "name", bridge, "type", bridge])
-    run(["sudo", "ip", "link", "set", "dev", bridge, "up"])
-
-run(["brctl", "show"])
-
-# Function to check if a VETH pair exists in a specific namespace
 def veth_pair_exists(veth: str, namespace: str):
+ """Function to check if a VETH pair exists in a specific namespace"""
     run("ip", "netns", "exec", namespace, "ip", "link", "show", veth, "up")
 
+
 def switches(veth: str, namespace: str):
+    """Bring vETHs up"""
     run("ip", "netns", "exec", namespace, "", "link", "show", veth, "up")
+
 
 
 # Create VETH pairs
@@ -72,3 +60,25 @@ def switches(veth: str, namespace: str):
 #        run_command(f"sudo ip link set dev {veth2} up")
 #    else:
 #        print(f"VETH pair {veth1} already exists in namespace {ns1}.")
+
+
+def main():
+    """Main Function"""
+    # Namespace
+    print(f"Setting up the network namespaces")
+    namespaces = ["ohost", "phost", "whost", "yhost", "prouter", "yrouter", "wrouter", "orouter", "crouter"]
+    for namespace in namespaces:
+        namespace_exists(namespace)
+
+    # Ethernet bridges
+    print(f"Setting Ethernet Bridges")
+    bridges = ["pbridge", "obridge", "ybridge", "wbridge"]
+    for bridge in bridges:
+        run(["sudo", "ip", "link", "add", "name", bridge, "type", bridge])
+        run(["sudo", "ip", "link", "set", "dev", bridge, "up"])
+
+    run(["brctl", "show"])
+
+
+if __name__ = "__main__":
+    main()
