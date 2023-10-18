@@ -2,11 +2,16 @@
 """Network Automation Project, Howard's and Chrysanthos' take"""
 from subprocess import run
 
-grn = "\033[32m"
-wht = "\033[0m"
+
+def subprocess_parser(command: str) -> list:
+    if command:
+        listout = command.split()
+    else:
+        print("You need to enter a string")
+    return listout
 
 
-def namespace_exists(namespace):
+def namespace_exists(namespace: str):
     """Check if the namespace exist"""
     try:
         if run(["sudo", "ip", "netns", "list", "| grep", namespace]):
@@ -16,14 +21,15 @@ def namespace_exists(namespace):
     except Error as e:
         print(e)
 
+
 # Namespace
-print(f"{grn}Setting up the network namespaces{wht}")
+print(f"Setting up the network namespaces")
 namespaces = ["ohost", "phost", "whost", "yhost", "prouter", "yrouter", "wrouter", "orouter", "crouter"]
 for namespace in namespaces:
     namespace_exists(namespace)
 
 # Ethernet bridges
-print(f"{grn}Setting Ethernet Bridges{wht}")
+print(f"Setting Ethernet Bridges")
 bridges = ["pbridge", "obridge", "ybridge", "wbridge"]
 for bridge in bridges:
     run(["sudo", "ip", "link", "add", "name", bridge, "type", bridge])
@@ -32,8 +38,12 @@ for bridge in bridges:
 run(["brctl", "show"])
 
 # Function to check if a VETH pair exists in a specific namespace
-def veth_pair_exists(veth, namespace):
+def veth_pair_exists(veth: str, namespace: str):
     run("ip", "netns", "exec", namespace, "ip", "link", "show", veth, "up")
+
+def switches(veth: str, namespace: str):
+    run("ip", "netns", "exec", namespace, "", "link", "show", veth, "up")
+
 
 # Create VETH pairs
 #print(f"{grn}Install VETHs{wht}")
