@@ -1,0 +1,16 @@
+---
+  # core:
+    # router: yes
+    # switch: no
+    # hosts: []
+corp:
+  hosts: ["corp-1", "corp-2"]
+  subnet: ""
+dmz:
+  hosts: ["dmz-1", "dmz-2"]
+  subnet: ""
+  # nat:
+  #   router: yes
+  #   switch: yes
+  #   hosts: []
+  #   subnet: ""

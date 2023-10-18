@@ -1,6 +1,7 @@
 #!/bin/env python3
 """Network Automation Project, Howard's and Chrysanthos' take"""
 from subprocess import run
+from yaml import safe_load
 
 
 def subprocess_parser(command: str) -> list:
@@ -32,35 +33,38 @@ def switches(veth: str, namespace: str):
     """Bring vETHs up"""
     run(subprocess_parser(f"ip netns exec {namespace} link show {veth} up"))
 
+def net_creation(dictionary: dict):
+    print(f"Setting up the network namespaces")
+    for key,value in dictionary.items():
+        print("Your hosts are:", v['hosts'])
+        print("Your subnet is:", v['subnet'])
+        # Namespace
+        namespace_exists(key)
+        for host in hosts:
+            namespace_exists(host)
+        # Ethernet bridges
+        print(f"Setting Ethernet Bridges")
+        run(subprocess_parser(f"sudo ip link add name {key}-br type bridge"))
+        run(subprocess_parser(f"sudo ip link set dev {key}-br up"))
+        # run(subprocess_parser(f"sudo ip netns exec {namespace} ip a add {ip} dev vEth"))
 
 
 
-# for veth1, veth2, ns1 in veth_connections:
-#     if not veth_pair_exists(veth1, ns1):
-#          run(subprocess_parser(f"sudo ip link add {veth1} type veth peer name {veth2}"))
-#          run(subprocess_parser(f"sudo ip link set {veth1} netns {ns1}"))
-#          run(subprocess_parser(f"sudo ip netns  {ns1} ip link set dev {veth1} up"))
-#          run(subprocess_parser(f"sudo ip link set dev {veth2} up"))
-#     else:
-#         print(f"VETH pair {veth1} already exists in namespace {ns1}.")
+def yaml_dict(file: str)-> dict:
+    with open(file, "r") as yml:
+       return safe_load(yml)  # pass back to the caller python data
 
 
 def main():
     """Main Function"""
     # Lists
-    namespaces = ["dmz", "core", "corp", "nat"]    
-    bridges = [f"{namespace}-br" for namespace in namespaces]
-    routers = [f"{namespace}-router" for namespace in namespaces]
-    switches = [f"{namespace}-sw" for namespace in namespaces]
+    # namespaces = ["dmz", "core", "corp", "nat"]    
+    # bridges = [f"{namespace}-br" for namespace in namespaces]
+    # routers = [f"{namespace}-router" for namespace in namespaces]
+    Networks = yaml_dict("./Final/topology.yml")
+    net_creation(Networks)
     
-    print(f"Setting up the network namespaces")
-    for namespace in namespaces:
-        # Namespace
-        namespace_exists(namespace)
-        # Ethernet bridges
-        print(f"Setting Ethernet Bridges")
-        run(subprocess_parser(f"sudo ip link add name {namespace}-br type bridge"))
-        run(subprocess_parser(f"sudo ip link set dev {namespace}-br up"))
+
 
 
     run(subprocess_parser("brctl show"))
