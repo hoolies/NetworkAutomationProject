@@ -4,6 +4,7 @@ from subprocess import run
 
 
 def subprocess_parser(command: str) -> list:
+    """Function that takes a sting and transforms it to list for subprocess run"""
     if command:
         listout = command.split()
     else:
