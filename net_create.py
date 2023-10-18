@@ -24,7 +24,7 @@ def namespace_exists(namespace: str):
 
 
 def veth_pair_exists(veth: str, namespace: str):
- """Function to check if a VETH pair exists in a specific namespace"""
+    """Function to check if a VETH pair exists in a specific namespace"""
     run("ip", "netns", "exec", namespace, "ip", "link", "show", veth, "up")
 
 
