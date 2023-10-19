@@ -85,6 +85,7 @@
       ignore_errors: yes
 
 # Repeat the above steps for other WAN links
+# Repeat here
 
     - name: Yellow WAN Link (number 2)
       command:
@@ -117,6 +118,8 @@
       command:
         cmd: "ip link set dev lo up"
       ignore_errors: yes
+      
+# Repeat here      
 # Repeat the above steps for other WAN links
 
     - name: Workaround to Prevent DHCP IP Assignment
