@@ -31,11 +31,6 @@ Before using this project, you need to have the following dependencies installed
 - The `yaml` module
 - Network namespace tools (e.g., `ip netns` and `brctl`)
 
-You can install the Python dependencies using the following command:
-
-```bash
-pip install PyYAML
-```
 ## Usage
 
 Clone this repository to your local machine.
