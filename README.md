@@ -3,19 +3,88 @@ Network Automation Project
 
 This is Howard's and Chrysanthos's take.
 
-# Network Automation Project with Python and Ansible
+## Table of Contents
 
-## Overview
+- [Project Description](#project-description)
+- [Prerequisites](#prerequisites)
+- [Usage](#usage)
+- [Configuration](#configuration)
 
-This project aims to demonstrate how to use Python and Ansible to create a scalable network infrastructure that includes virtual machines (VMs) and containers. Network automation is crucial for managing modern, complex network environments efficiently.
 
-In this project, we will focus on creating a network that scales easily, deploys VMs, and manages containers. We'll be using Python for scripting and Ansible for automation tasks. This README will guide you through the setup and execution of the project.
+## Project Description
+
+This project provides a set of Python scripts to automate the creation and management of network namespaces and Ethernet bridges. It is designed to streamline the setup of network environments, making it easier to work with isolated network segments and bridges.
+
+The project includes the following key functions:
+
+- Creating and managing network namespaces.
+- Checking the existence of network namespaces.
+- Creating and managing VETH pairs within namespaces.
+- Setting up Ethernet bridges within namespaces.
+- Loading network configurations from YAML files.
 
 ## Prerequisites
 
-Before you begin, ensure you have the following prerequisites installed:
+Before using this project, you need to have the following dependencies installed:
 
-- Python: You'll need Python installed on your machine.
-- Ansible: Install Ansible, a powerful automation tool, on your system.
-- Virtualization Platform: Depending on your choice, set up a virtualization platform such as VirtualBox, VMware, or others.
-- Container Platform: Install a container platform like Docker or Kubernetes, as per your requirements.
+- Python 3
+- The `yaml` module
+- Network namespace tools (e.g., `ip netns` and `brctl`)
+
+You can install the Python dependencies using the following command:
+
+```bash
+pip install PyYAML
+```
+## Usage
+
+Clone this repository to your local machine.
+
+```bash
+
+git clone https://github.com/your-username/network-automation-project.git
+```
+
+Navigate to the project directory.
+
+```bash
+
+cd network-automation-project
+```
+
+Run the script to set up your network environment.
+
+```bash
+
+python script.py
+```
+
+Follow the prompts to create and manage network namespaces, VETH pairs, and Ethernet bridges.
+
+## Configuration
+
+The network configuration is loaded from a YAML file (topology.yml) that defines the namespaces and their associated hosts. You can customize this file to match your specific network requirements.
+
+Example topology.yml file:
+```
+---
+networks:
+  dmz:
+    hosts:
+      - host1
+      - host2
+    subnet: 192.168.1.0/24
+  core:
+    hosts:
+      - host3
+    subnet: 192.168.2.0/24
+  corp:
+    hosts:
+      - host4
+      - host5
+    subnet: 192.168.3.0/24
+  nat:
+    hosts:
+      - host6
+    subnet: 192.168.4.0/24
+```
