@@ -4,10 +4,10 @@
     # switch: no
     # hosts: []
 corp:
-  hosts: ["corp-1", "corp-2"]
+  hosts: ""
   subnet: ""
 dmz:
-  hosts: ["dmz-1", "dmz-2"]
+  hosts: ""
   subnet: ""
   # nat:
   #   router: yes

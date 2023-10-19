@@ -29,25 +29,36 @@ def veth_pair_exists(veth: str, namespace: str):
     run(subprocess_parser(f"ip netns exec {namespace} ip link show {veth} up"))
 
 
-def switches(veth: str, namespace: str):
-    """Bring vETHs up"""
-    run(subprocess_parser(f"ip netns exec {namespace} link show {veth} up"))
+# def bridges(namespace: str):
+#     """Create the bridge"""
+#     run(subprocess_parser(f"sudo ip link add name {namespace} type bridge"))
+#     run(subprocess_parser(f"sudo ip link set dev {namespace} up"))
+
+def vETHs(namespace: str):
+    """Create the vETHs"""
+    run(subprocess_parser(f"sudo ip link add {namespcae}-pc1-{namespace}-br type veth peer name "))
 
 def net_creation(dictionary: dict):
     print(f"Setting up the network namespaces")
     for key,value in dictionary.items():
-        print("Your hosts are:", v['hosts'])
-        print("Your subnet is:", v['subnet'])
+        # print("Your hosts are:", v['hosts'])
+        # print("Your subnet is:", v['subnet'])
         # Namespace
         namespace_exists(key)
-        for host in hosts:
-            namespace_exists(host)
         # Ethernet bridges
         print(f"Setting Ethernet Bridges")
         run(subprocess_parser(f"sudo ip link add name {key}-br type bridge"))
         run(subprocess_parser(f"sudo ip link set dev {key}-br up"))
-        # run(subprocess_parser(f"sudo ip netns exec {key} ip a add {ip} dev vEth"))
-
+        # vETHs
+        print(f"Create vETHs for {key}")
+        run(subprocess_parser(f"sudo ip link add {key}-h2br type veth peer name br2{key}-h"))
+        run(subprocess_parser(f"sudo ip link set {key}-h2br netns {key}-h"))
+        run(subprocess_parser(f"sudo ip link set dev br2{key}-h master {key}-br"))
+        run(subprocess_parser(f"sudo ip link set dev br2{key}-h up"))
+        run(subprocess_parser(f"sudo ip link add {key}-rt2br type veth peer name br2{key}-rt"))
+        run(subprocess_parser(f"sudo ip link set {key}-rt2br netns {key}-rt"))
+        run(subprocess_parser(f"sudo ip link set dev {key}-br2rt master {key}-br"))
+        run(subprocess_parser(f"sudo ip link set dev {key}-br2rt up"))
 
 
 def yaml_dict(file: str)-> dict:
