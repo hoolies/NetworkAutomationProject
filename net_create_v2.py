@@ -17,13 +17,16 @@ def ns_create(namespace: str):
     """Check if the namespace exist"""
     run(subprocess_parser(f"sudo ip netns add {namespace}"))
 
+
 def create_core(dictionary: dict):
+    """Create the core and NAT"""
     [ns_create(f"core-{i}") for i in ["rt","h"]]
     
 def bridger(network: str):
     """Function to create the bridge and bring it up"""
     run(subprocess_parser(f"sudo ip link add name {network}-br type bridge"))
     run(subprocess_parser(f"sudo ip link set dev {network}-br up"))
+
 
 def network_connector(network: str, source: str, destination: str):
     """Function to cconnect the network componenets"""
@@ -32,7 +35,9 @@ def network_connector(network: str, source: str, destination: str):
     run(subprocess_parser(f"sudo ip link set dev {network}-{destination}2{source} master {network}-{destination}"))
     run(subprocess_parser(f"sudo ip link set dev {network}-{destination}2{source} up"))
 
+
 def net_creation(dictionary: dict):
+    """Use other functions to create the network"""
     print(f"Setting up the network")
     for key,value in dictionary.items():
         # print("Your hosts are:", v['hosts'])
@@ -58,6 +63,7 @@ def net_creation(dictionary: dict):
 
 
 def yaml_dict(file: str)-> dict:
+    """Takes a string for the YAML file path and returns a dictionary"""
     with open(file, "r") as yml:
        return safe_load(yml)  # pass back to the caller python data
 
@@ -68,8 +74,6 @@ def main():
     Networks = yaml_dict("./Final/topology.yml")
     # Use the dictionary 
     net_creation(Networks)
-    # Print the output
-    run(subprocess_parser("brctl show"))
 
 
 if __name__ == "__main__":
