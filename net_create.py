@@ -46,7 +46,7 @@ def net_creation(dictionary: dict):
         print(f"Setting Ethernet Bridges")
         run(subprocess_parser(f"sudo ip link add name {key}-br type bridge"))
         run(subprocess_parser(f"sudo ip link set dev {key}-br up"))
-        # run(subprocess_parser(f"sudo ip netns exec {namespace} ip a add {ip} dev vEth"))
+        # run(subprocess_parser(f"sudo ip netns exec {key} ip a add {ip} dev vEth"))
 
 
 
