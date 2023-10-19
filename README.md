@@ -3,9 +3,6 @@ Network Automation Project
 
 This is Howard's and Chrysanthos's take.
 
-## Table of Contents
-
-<<<<<<< HEAD
 ## About
 
 This project aims to demonstrate how to use Python, Ansible and Bash to create a scalable network infrastructure that might includes virtual machines (VMs) and containers.
