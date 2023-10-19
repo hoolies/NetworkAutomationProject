@@ -85,42 +85,7 @@
       ignore_errors: yes
 
 # Repeat the above steps for other WAN links
-# Repeat here
 
-    - name: Yellow WAN Link (number 2)
-      command:
-        cmd: "ip addr add {{ item.yrout2crout }} dev yrout2crout"
-      with_items: "{{ network_vars }}"
-      ignore_errors: yes
-
-    - name: Bring Up Yellow WAN Link (number 2) on YRouter
-      command:
-        cmd: "ip link set dev yrout2crout up"
-      ignore_errors: yes
-
-    - name: Bring Up Loopback on YRouter
-      command:
-        cmd: "ip link set dev lo up"
-      ignore_errors: yes
-
-    - name: Yellow WAN Link (number 2) on CRouter
-      command:
-        cmd: "ip addr add {{ item.crout2yrout }} dev crout2yrout"
-      with_items: "{{ network_vars }}"
-      ignore_errors: yes
-
-    - name: Bring Up Yellow WAN Link (number 2) on CRouter
-      command:
-        cmd: "ip link set dev crout2yrout up"
-      ignore_errors: yes
-
-    - name: Bring Up Loopback on CRouter
-      command:
-        cmd: "ip link set dev lo up"
-      ignore_errors: yes
-      
-# Repeat here      
-# Repeat the above steps for other WAN links
 
     - name: Workaround to Prevent DHCP IP Assignment
       command:
