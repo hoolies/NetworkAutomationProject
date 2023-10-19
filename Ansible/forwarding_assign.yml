@@ -1,0 +1,143 @@
+---
+- name: Configure Networking in Network Namespaces
+  hosts: localhost
+  become: yes
+  tasks:
+    - name: Include network_vars template
+      include_vars:
+        file: network_vars.j2
+
+    - name: Set IP Forwarding
+      sysctl:
+        name: "{{ item.name }}"
+        value: "{{ item.value }}"
+        state: present
+      with_items:
+        - { name: "net.bridge.bridge-nf-call-iptables", value: "0" }
+        - { name: "net.ipv4.ip_forward", value: "1" }
+        - { name: "net.ipv6.conf.default.forwarding", value: "1" }
+        - { name: "net.ipv6.conf.all.forwarding", value: "1" }
+
+    - name: Load IP Forwarding Configuration
+      shell: "sysctl -p /etc/sysctl.d/10-ip-forwarding.conf"
+      args:
+        chdir: "/etc/sysctl.d/"
+      become: yes
+
+    - name: Configure IP Addresses in Network Namespaces
+      command:
+        cmd: "ip addr add {{ item.addr }} dev {{ item.dev }}"
+      with_items: "{{ network_vars }}"
+      args:
+        creates: "/var/run/netns/{{ item.dev }}"
+      ignore_errors: yes
+
+    - name: Bring Up Network Interfaces in Network Namespaces
+      command:
+        cmd: "ip link set dev {{ item.dev }} up"
+      with_items: "{{ network_vars }}"
+      args:
+        creates: "/var/run/netns/{{ item.dev }}"
+      ignore_errors: yes
+
+    - name: Bring Up Loopback Interfaces in Network Namespaces
+      command:
+        cmd: "ip link set dev lo up"
+      with_items: "{{ network_vars }}"
+      args:
+        creates: "/var/run/netns/{{ item.dev }}"
+      ignore_errors: yes
+
+- name: Configure Networking in Network Namespaces
+  hosts: localhost
+  become: yes
+  tasks:
+    - name: Purple WAN Link (number 1)
+      command:
+        cmd: "ip addr add {{ item.prout2crout }} dev prout2crout"
+      with_items: "{{ network_vars }}"
+      ignore_errors: yes
+
+    - name: Bring Up Purple WAN Link (number 1) on PRouter
+      command:
+        cmd: "ip link set dev prout2crout up"
+      ignore_errors: yes
+
+    - name: Bring Up Loopback on PRouter
+      command:
+        cmd: "ip link set dev lo up"
+      ignore_errors: yes
+
+    - name: Purple WAN Link (number 1) on CRouter
+      command:
+        cmd: "ip addr add {{ item.crout2prout }} dev crout2prout"
+      with_items: "{{ network_vars }}"
+      ignore_errors: yes
+
+    - name: Bring Up Purple WAN Link (number 1) on CRouter
+      command:
+        cmd: "ip link set dev crout2prout up"
+      ignore_errors: yes
+
+    - name: Bring Up Loopback on CRouter
+      command:
+        cmd: "ip link set dev lo up"
+      ignore_errors: yes
+
+# Repeat the above steps for other WAN links
+
+    - name: Yellow WAN Link (number 2)
+      command:
+        cmd: "ip addr add {{ item.yrout2crout }} dev yrout2crout"
+      with_items: "{{ network_vars }}"
+      ignore_errors: yes
+
+    - name: Bring Up Yellow WAN Link (number 2) on YRouter
+      command:
+        cmd: "ip link set dev yrout2crout up"
+      ignore_errors: yes
+
+    - name: Bring Up Loopback on YRouter
+      command:
+        cmd: "ip link set dev lo up"
+      ignore_errors: yes
+
+    - name: Yellow WAN Link (number 2) on CRouter
+      command:
+        cmd: "ip addr add {{ item.crout2yrout }} dev crout2yrout"
+      with_items: "{{ network_vars }}"
+      ignore_errors: yes
+
+    - name: Bring Up Yellow WAN Link (number 2) on CRouter
+      command:
+        cmd: "ip link set dev crout2yrout up"
+      ignore_errors: yes
+
+    - name: Bring Up Loopback on CRouter
+      command:
+        cmd: "ip link set dev lo up"
+      ignore_errors: yes
+# Repeat the above steps for other WAN links
+
+    - name: Workaround to Prevent DHCP IP Assignment
+      command:
+        cmd: "ip addr add {{ item.ip }} dev {{ item.dev }}"
+      with_items: "{{ network_vars }}"
+      ignore_errors: yes
+
+    - name: Configure NAT Link on CRouter
+      command:
+        cmd: "ip addr add {{ item.crout2nat }} dev crout2nat"
+      with_items: "{{ network_vars }}"
+      ignore_errors: yes
+
+    - name: Bring Up NAT Link on CRouter
+      command:
+        cmd: "ip link set dev crout2nat up"
+      ignore_errors: yes
+
+    - name: Configure NAT Link on Host
+      command:
+        cmd: "ip addr add {{ item.nat2crout }} dev nat2crout"
+      with_items: "{{ network_vars }}"
+      ignore_errors: yes
