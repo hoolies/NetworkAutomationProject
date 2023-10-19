@@ -6,63 +6,63 @@
   tasks:
     - name: Include YAML configuration
       include_vars:
-        file: /home/student/test_scripts/testtest/network.yml
+        file: /home/student/mycode/test/network.yml
         name: network_dict
 
-    - name: Create Network Namespaces
-      command: ip netns add {{ item.key }}
-      loop: "{{ network_dict | dict2items }}"
-      when: item.value.hosts or item.value.subnet
+    # - name: Create Network Namespaces
+    #   command: ip netns add {{ item.key }}
+    #   loop: "{{ network_dict | dict2items }}"
+    #   when: item.value.hosts or item.value.subnet
 
-    - name: Create Bridge Namespaces
-      command: ip netns add {{ item.key }}br
-      loop: "{{ network_dict | dict2items }}"
-      when: item.value.hosts or item.value.subnet
+    # - name: Create Bridge Namespaces
+    #   command: ip netns add {{ item.key }}br
+    #   loop: "{{ network_dict | dict2items }}"
+    #   when: item.value.hosts or item.value.subnet
 
-    - name: Create Router Namespaces
-      command: ip netns add {{ item.key }}rt
-      loop: "{{ network_dict | dict2items }}"
-      when: item.value.hosts or item.value.subnet
+    # - name: Create Router Namespaces
+    #   command: ip netns add {{ item.key }}rt
+    #   loop: "{{ network_dict | dict2items }}"
+    #   when: item.value.hosts or item.value.subnet
 
-    - name: Create Host Namespaces
-      command: ip netns add {{ item.key }}h
-      loop: "{{ network_dict | dict2items }}"
-      when: item.value.hosts or item.value.subnet
+    # - name: Create Host Namespaces
+    #   command: ip netns add {{ item.key }}h
+    #   loop: "{{ network_dict | dict2items }}"
+    #   when: item.value.hosts or item.value.subnet
 
-    - name: Create Ethernet Bridges
-      command: ip link add name {{ item.key }}br type bridge
-      loop: "{{ network_dict | dict2items }}"
-      when: item.value.hosts or item.value.subnet
+#    - name: Create Ethernet Bridges
+#      command: ip link add name {{ item.key }}br type bridge
+#      loop: "{{ network_dict | dict2items }}"
+#      when: item.value.hosts or item.value.subnet
 
-    - name: Set Ethernet Bridges UP
-      command: ip link set dev {{ item.key }}br up
-      loop: "{{ network_dict | dict2items }}"
-      when: item.value.hosts or item.value.subnet
+#    - name: Set Ethernet Bridges UP
+#      command: ip link set dev {{ item.key }}br up
+#      loop: "{{ network_dict | dict2items }}"
+#      when: item.value.hosts or item.value.subnet
 
-    - name: Create vETHs for Hosts
-      command: ip link add {{ item.key }}h2br type veth peer name br2{{ item.key }}h
-      loop: "{{ network_dict | dict2items }}"
-      when: item.value.hosts
+    # - name: Create vETHs for Hosts
+    #   command: ip link add {{ item.key }}h2br type veth peer name br2{{ item.key }}h
+    #   loop: "{{ network_dict | dict2items }}"
+    #   when: item.value.hosts
 
-    - name: Set vETHs for Hosts to Network Namespace
-      command: ip link set {{ item.key }}h2br netns {{ item.key }}h
-      loop: "{{ network_dict | dict2items }}"
-      when: item.value.hosts
+    # - name: Set vETHs for Hosts to Network Namespace
+    #   command: ip link set {{ item.key }}h2br netns {{ item.key }}h
+    #   loop: "{{ network_dict | dict2items }}"
+    #   when: item.value.hosts
 
-    - name: Set vETHs for Hosts to Bridge
-      command: ip link set dev br2{{ item.key }}h master {{ item.key }}br
-      loop: "{{ network_dict | dict2items }}"
-      when: item.value.hosts
+    # - name: Set vETHs for Hosts to Bridge
+    #   command: ip link set dev br2{{ item.key }}h master {{ item.key }}br
+    #   loop: "{{ network_dict | dict2items }}"
+    #   when: item.value.hosts
 
-    - name: Set vETHs for Hosts UP
-      command: ip link set dev br2{{ item.key }}h up
-      loop: "{{ network_dict | dict2items }}"
-      when: item.value.hosts
+    # - name: Set vETHs for Hosts UP
+    #   command: ip link set dev br2{{ item.key }}h up
+    #   loop: "{{ network_dict | dict2items }}"
+    #   when: item.value.hosts
 
-    - name: Create vETHs for Routers
-      command: ip link add {{ item.key }}rt2br type veth peer name br2{{ item.key }}rt
-      loop: "{{ network_dict | dict2items }}"
-      when: item.value.subnet
+    # - name: Create vETHs for Routers
+    #   command: ip link add {{ item.key }}br2rt type veth peer name br2{{ item.key }}rt
+    #   loop: "{{ network_dict | dict2items }}"
+    #   when: item.value.subnet
 
     - name: Set vETHs for Routers to Network Namespace
       command: ip link set {{ item.key }}rt2br netns {{ item.key }}rt
