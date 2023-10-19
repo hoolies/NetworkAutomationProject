@@ -1,0 +1,6 @@
+---
+- name: Run Python Script
+  hosts: your_target_hosts
+  tasks:
+    - name: Run Python Script
+      command: python /path/to/your_script.py
