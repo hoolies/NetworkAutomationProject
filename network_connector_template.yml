@@ -1,0 +1,6 @@
+Network: <<network>>
+  source: <<source>>
+  destination: <<destination>>
+  link: <<network>>-<<source>>2<<destination>>
+  veth: <<network>>-<<source>>2<<destination>>
+  namespace: <<network>>-<<source>>
