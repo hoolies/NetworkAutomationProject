@@ -334,12 +334,15 @@
   hosts: localhost
   tasks:
     - name: Enable NAT function
-      command: |
-        sudo iptables -t nat -F
-        sudo iptables -t nat -A POSTROUTING -s 10.1.0.0/16 -o ens3 -j MASQUERADE
-        sudo iptables -t filter -A FORWARD -i ens3 -o nat2crout -j ACCEPT
-        sudo iptables -t filter -A FORWARD -o ens3 -i nat2crout -j ACCEPT
-        sudo ip route add 10.1.0.0/16 via 10.1.5.17
+      command: "sudo iptables -t nat -F"
+    - name: Enable NAT Post Routing
+      command: "sudo iptables -t nat -A POSTROUTING -s 10.1.0.0/16 -o ens3 -j MASQUERADE"
+    - name: Enable NAT to croute
+      command: "sudo iptables -t filter -A FORWARD -i ens3 -o nat2crout -j ACCEPT"
+    - name: Enable NAT to croute
+      command: "sudo iptables -t filter -A FORWARD -o ens3 -i nat2crout -j ACCEPT"
+    - name: Enable NAT, adding static route
+      command: "sudo ip route add 10.1.0.0/16 via 10.1.5.17"
       become: true
 
     - name: Test IP connectivity including NAT
