@@ -1,6 +1,6 @@
 ---
-- name: Run Python Script
-  hosts: your_target_hosts
+- name: Run net_create_v2
+  hosts: localhost
   tasks:
-    - name: Run Python Script
-      command: python /path/to/your_script.py
+    - name: Run Script
+      command: python3 /path/to/net_create_v2.py
