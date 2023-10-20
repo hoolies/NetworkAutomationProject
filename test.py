@@ -1,18 +1,10 @@
-Networks = [
-    'corp': {  
-        'hosts': [
-            'corp-1', 
-            'corp-2'], 
-        'subnet': '192.168.1.0/24'
-        }, 
-    'dmz': { 
-        'hosts': [
-            'dmz-1', 
-            'dmz-2'], 
-        'subnet': '172.16.0.0/12'
-    }
-]
+from yaml import safe_load
 
-for k,v in Networks.items():
+def yaml_dict(file: str)-> dict:
+    """Takes a string for the YAML file path and returns a dictionary"""
+    with open(file, "r") as yml:
+       return safe_load(yml)  # pass back to the caller python data
+
+for k,v in Networks['Networks'].items():
     print("Your hosts are:", v['hosts'])
     print("Your IP is:", v['subnet'])
