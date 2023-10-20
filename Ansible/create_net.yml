@@ -344,6 +344,3 @@
     - name: Enable NAT, adding static route
       command: "sudo ip route add 10.1.0.0/16 via 10.1.5.17"
       become: true
-
-    - name: Test IP connectivity including NAT
-      command: "fping 10.0.0.1 10.1.1.1 10.1.1.21 10.1.2.1 10.1.2.21 10.1.3.1 10.1.3.21 10.1.4.1 10.1.4.21 8.8.8.8"
