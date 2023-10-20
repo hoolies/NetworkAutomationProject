@@ -85,7 +85,12 @@ def yaml_dict(file: str)-> dict:
     """Takes a string for the YAML file path and returns a dictionary"""
     with open(file, "r") as yml:
        return safe_load(yml)  # pass back to the caller python data
-
+        
+def assiging_ip(network: str):
+    # phost LAN link
+    run(subprocess_parser(f"sudo ip netns exec {network} ip addr add 10.255.1.0/24 dev {network}-h2br"))
+    run(subprocess_parser(f"sudo ip netns exec {network} ip link set dev {network}-h2br up"))
+    run(subprocess_parser(f"sudo ip netns exec {network} ip link set dev lo up"))
 
 def ip_forwarding_activate():
     run(subprocess_parser(f"sudo sysctl net.bridge.bridge-nf-call-iptables=0"))

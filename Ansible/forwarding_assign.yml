@@ -1,111 +1,80 @@
 ---
-- name: Configure Networking in Network Namespaces
+- name: Create Network
   hosts: localhost
+  gather_facts: no
   become: yes
   tasks:
-    - name: Include network_vars template
+    - name: Include YAML configuration
       include_vars:
-        file: network_vars.j2
+        file: /home/student/mycode/test/network.yml
+        name: network_dict
 
-    - name: Set IP Forwarding
-      sysctl:
-        name: "{{ item.name }}"
-        value: "{{ item.value }}"
-        state: present
-      with_items:
-        - { name: "net.bridge.bridge-nf-call-iptables", value: "0" }
-        - { name: "net.ipv4.ip_forward", value: "1" }
-        - { name: "net.ipv6.conf.default.forwarding", value: "1" }
-        - { name: "net.ipv6.conf.all.forwarding", value: "1" }
+    # - name: Create Network Namespaces
+    #   command: ip netns add {{ item.key }}
+    #   loop: "{{ network_dict | dict2items }}"
+    #   when: item.value.hosts or item.value.subnet
 
-    - name: Load IP Forwarding Configuration
-      shell: "sysctl -p /etc/sysctl.d/10-ip-forwarding.conf"
-      args:
-        chdir: "/etc/sysctl.d/"
-      become: yes
+    # - name: Create Bridge Namespaces
+    #   command: ip netns add {{ item.key }}br
+    #   loop: "{{ network_dict | dict2items }}"
+    #   when: item.value.hosts or item.value.subnet
 
-    - name: Configure IP Addresses in Network Namespaces
-      command:
-        cmd: "ip addr add {{ item.addr }} dev {{ item.dev }}"
-      with_items: "{{ network_vars }}"
-      args:
-        creates: "/var/run/netns/{{ item.dev }}"
-      ignore_errors: yes
+    # - name: Create Router Namespaces
+    #   command: ip netns add {{ item.key }}rt
+    #   loop: "{{ network_dict | dict2items }}"
+    #   when: item.value.hosts or item.value.subnet
 
-    - name: Bring Up Network Interfaces in Network Namespaces
-      command:
-        cmd: "ip link set dev {{ item.dev }} up"
-      with_items: "{{ network_vars }}"
-      args:
-        creates: "/var/run/netns/{{ item.dev }}"
-      ignore_errors: yes
+    # - name: Create Host Namespaces
+    #   command: ip netns add {{ item.key }}h
+    #   loop: "{{ network_dict | dict2items }}"
+    #   when: item.value.hosts or item.value.subnet
 
-    - name: Bring Up Loopback Interfaces in Network Namespaces
-      command:
-        cmd: "ip link set dev lo up"
-      with_items: "{{ network_vars }}"
-      args:
-        creates: "/var/run/netns/{{ item.dev }}"
-      ignore_errors: yes
+#    - name: Create Ethernet Bridges
+#      command: ip link add name {{ item.key }}br type bridge
+#      loop: "{{ network_dict | dict2items }}"
+#      when: item.value.hosts or item.value.subnet
 
-- name: Configure Networking in Network Namespaces
-  hosts: localhost
-  become: yes
-  tasks:
-    - name: Purple WAN Link (number 1)
-      command:
-        cmd: "ip addr add {{ item.prout2crout }} dev prout2crout"
-      with_items: "{{ network_vars }}"
-      ignore_errors: yes
+#    - name: Set Ethernet Bridges UP
+#      command: ip link set dev {{ item.key }}br up
+#      loop: "{{ network_dict | dict2items }}"
+#      when: item.value.hosts or item.value.subnet
 
-    - name: Bring Up Purple WAN Link (number 1) on PRouter
-      command:
-        cmd: "ip link set dev prout2crout up"
-      ignore_errors: yes
+    # - name: Create vETHs for Hosts
+    #   command: ip link add {{ item.key }}h2br type veth peer name br2{{ item.key }}h
+    #   loop: "{{ network_dict | dict2items }}"
+    #   when: item.value.hosts
 
-    - name: Bring Up Loopback on PRouter
-      command:
-        cmd: "ip link set dev lo up"
-      ignore_errors: yes
+    # - name: Set vETHs for Hosts to Network Namespace
+    #   command: ip link set {{ item.key }}h2br netns {{ item.key }}h
+    #   loop: "{{ network_dict | dict2items }}"
+    #   when: item.value.hosts
 
-    - name: Purple WAN Link (number 1) on CRouter
-      command:
-        cmd: "ip addr add {{ item.crout2prout }} dev crout2prout"
-      with_items: "{{ network_vars }}"
-      ignore_errors: yes
+    # - name: Set vETHs for Hosts to Bridge
+    #   command: ip link set dev br2{{ item.key }}h master {{ item.key }}br
+    #   loop: "{{ network_dict | dict2items }}"
+    #   when: item.value.hosts
 
-    - name: Bring Up Purple WAN Link (number 1) on CRouter
-      command:
-        cmd: "ip link set dev crout2prout up"
-      ignore_errors: yes
+    # - name: Set vETHs for Hosts UP
+    #   command: ip link set dev br2{{ item.key }}h up
+    #   loop: "{{ network_dict | dict2items }}"
+    #   when: item.value.hosts
 
-    - name: Bring Up Loopback on CRouter
-      command:
-        cmd: "ip link set dev lo up"
-      ignore_errors: yes
+    # - name: Create vETHs for Routers
+    #   command: ip link add {{ item.key }}br2rt type veth peer name br2{{ item.key }}rt
+    #   loop: "{{ network_dict | dict2items }}"
+    #   when: item.value.subnet
 
-# Repeat the above steps for other WAN links
+    - name: Set vETHs for Routers to Network Namespace
+      command: ip link set {{ item.key }}rt2br netns {{ item.key }}rt
+      loop: "{{ network_dict | dict2items }}"
+      when: item.value.subnet
 
+    - name: Set vETHs for Routers to Bridge
+      command: ip link set dev {{ item.key }}br2rt master {{ item.key }}br
+      loop: "{{ network_dict | dict2items }}"
+      when: item.value.subnet
 
-    - name: Workaround to Prevent DHCP IP Assignment
-      command:
-        cmd: "ip addr add {{ item.ip }} dev {{ item.dev }}"
-      with_items: "{{ network_vars }}"
-      ignore_errors: yes
-
-    - name: Configure NAT Link on CRouter
-      command:
-        cmd: "ip addr add {{ item.crout2nat }} dev crout2nat"
-      with_items: "{{ network_vars }}"
-      ignore_errors: yes
-
-    - name: Bring Up NAT Link on CRouter
-      command:
-        cmd: "ip link set dev crout2nat up"
-      ignore_errors: yes
-
-    - name: Configure NAT Link on Host
-      command:
-        cmd: "ip addr add {{ item.nat2crout }} dev nat2crout"
-      with_items: "{{ network_vars }}"
-      ignore_errors: yes
+    - name: Set vETHs for Routers UP
+      command: ip link set dev {{ item.key }}br2rt up
+      loop: "{{ network_dict | dict2items }}"
+      when: item.value.subnet
