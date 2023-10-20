@@ -44,9 +44,9 @@ def nat_connections():
     """Create the NAT connection to the core"""
     run(subprocess_parser(f"sudo ip link add core2nat type veth peer nat2core"))
     run(subprocess_parser(f"sudo ip link set core2nat netns core"))
-    run(subprocess_parser(f"sudo ip netns exec core-r ip addr add 10.225.5.17/30 dev core-r2nat"))
+    run(subprocess_parser(f"sudo ip netns exec core-r ip addr add 10.225.255.17/30 dev core-r2nat"))
     run(subprocess_parser(f"sudo ip netns exec core-r ip link set dev core-r2nat up"))
-    run(subprocess_parser(f"sudo ip addr add 10.225.5.18/30 dev nat2core-r"))
+    run(subprocess_parser(f"sudo ip addr add 10.225.255.18/30 dev nat2core-r"))
 
 
 
@@ -109,29 +109,29 @@ def ip_forwarding_per_subnet(network: str):
     run(subprocess_parser(f"sudo ip netns exec {network}-r sysctl -p /etc/sysctl.d/10-ip-forwarding.conf"))
 
 
-def assiging_ip(network: str):
+def assiging_ip(network: str, subnet: str):
     """Assign IPs"""
-    run(subprocess_parser(f"sudo ip netns exec {network} ip addr add 10.255.1.0/24 dev {network}-h2br"))
+    run(subprocess_parser(f"sudo ip netns exec {network} ip addr add {subnet} dev {network}-h2br"))
     run(subprocess_parser(f"sudo ip netns exec {network} ip link set dev {network}-h2br up"))
     run(subprocess_parser(f"sudo ip netns exec {network} ip link set dev lo up"))
 
 
-def assiging_ip(network: str):
+def assiging_ip(network: str, subnet: str):
     # phost LAN link
-    run(subprocess_parser(f"sudo ip netns exec {network} ip addr add 10.255.1.0/24 dev {network}-h2br"))
+    run(subprocess_parser(f"sudo ip netns exec {network} ip addr add {subnet} dev {network}-h2br"))
     run(subprocess_parser(f"sudo ip netns exec {network} ip link set dev {network}-h2br up"))
     run(subprocess_parser(f"sudo ip netns exec {network} ip link set dev lo up"))
 
 
-def assign_static_routes(network: str):
+def assign_static_routes(network: str, subnet: str):
     """Create static routes"""
     # Configure routes on the core router
-    run(subprocess_parser(f"sudo ip netns exec {network} ip route add 10.255.1.0/24 via 10.255.5.2"))
-    run(subprocess_parser(f"sudo ip netns exec {network} ip route add default via 10.225.5.18"))
+    run(subprocess_parser(f"sudo ip netns exec {network} ip route add {subnet} via 10.255.5.2"))
+    run(subprocess_parser(f"sudo ip netns exec {network} ip route add default via 10.225.255.18"))
     #Configure default routes on the hosts
-    run(subprocess_parser(f"sudo ip netns exec {network} ip route add default via 10.225.5.18"))
+    run(subprocess_parser(f"sudo ip netns exec {network} ip route add default via 10.225.255.18"))
     #Configure the default routes on the edge routers
-    run(subprocess_parser(f"sudo ip netns exec {network} ip route add default via 10.225.5.18"))
+    run(subprocess_parser(f"sudo ip netns exec {network} ip route add default via 10.225.255.18"))
 
 
 # def prevent_DHCP(network: str):
@@ -140,13 +140,13 @@ def assign_static_routes(network: str):
 #     run(subprocess_parser(f"sudo ip addr add 192.168.90.4/24 dev {network}-br"))
 
 
-def enable_nat():
+def enable_nat(subnet: str):
     # enabling NAT
     run(subprocess_parser(f"sudo iptables -t nat -F"))
-    run(subprocess_parser(f"sudo iptables -t nat    -A POSTROUTING -s 10.225.0.0/16 -o ens3 -j MASQUERADE"))
+    run(subprocess_parser(f"sudo iptables -t nat    -A POSTROUTING -s {subnet} -o ens3 -j MASQUERADE"))
     run(subprocess_parser(f"sudo iptables -t filter -A FORWARD -i ens3 -o nat2crout -j ACCEPT"))
     run(subprocess_parser(f"sudo iptables -t filter -A FORWARD -o ens3 -i nat2crout -j ACCEPT"))
-    run(subprocess_parser(f"sudo ip route add 10.225.0.0/16 via 10.225.5.17"))
+    run(subprocess_parser(f"sudo ip route add {subnet} via 10.225.255.17"))
 
 
 def main():
