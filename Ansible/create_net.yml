@@ -9,6 +9,7 @@
         - phost
         - whost
         - yhost
+        - ohost
         - prouter
         - yrouter
         - wrouter
@@ -84,7 +85,19 @@
     
     - name: Move wrout2wbrg to the wrouter network namespace
       command: "sudo ip link set wrout2wbrg netns wrouter"
-    
+
+    - name: Move wrout2wbrg to the wrouter network namespace1
+      command: "sudo ip link add whost2wbrg type veth peer name wbrg2whost"
+
+    - name: Move wrout2wbrg to the wrouter network namespace2
+      command: "sudo ip link set whost2wbrg netns whost"
+
+    - name: Move wrout2wbrg to the wrouter network namespace3
+      command: "sudo ip link set dev wbrg2whost master wbridge"
+
+    - name: Move wrout2wbrg to the wrouter network namespace4
+      command: "sudo ip link set dev wbrg2whost up"
+
     - name: Set wbrg2wrout master to wbridge
       command: "sudo ip link set dev wbrg2wrout master wbridge"
     
@@ -93,6 +106,7 @@
 
     - name: Create veth pair ohost2obrg and obrg2ohost
       command: "sudo ip link add ohost2obrg type veth peer name obrg2ohost"
+      ignore_errors: true
     
     - name: Move ohost2obrg to the ohost network namespace
       command: "sudo ip link set ohost2obrg netns ohost"
@@ -251,9 +265,11 @@
 
     - name: Assign IP address to whost LAN link
       command: "sudo ip netns exec whost ip addr add 10.1.3.21/24 dev whost2wbrg"
+      ignore_errors: true
 
     - name: Enable whost LAN link
       command: "sudo ip netns exec whost ip link set dev whost2wbrg up"
+      ignore_errors: true
 
     - name: Enable whost loopback interface
       command: "sudo ip netns exec whost ip link set dev lo up"
