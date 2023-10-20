@@ -1,12 +1,13 @@
 ---
+Networks:
   # core:
     # router: yes
     # switch: no
     # hosts: []
-corp:
+- corp:
   hosts: ""
   subnet: ""
-dmz:
+- dmz:
   hosts: ""
   subnet: ""
   # nat:

@@ -34,7 +34,6 @@ def network_connector(network: str, source: str, destination: str):
 
 def create_core(network: str):
     """Create the core and NAT"""
-    [ns_create(f"core-{i}") for i in ["r","h"]]
     run(subprocess_parser(f"sudo ip link add core2{network} type veth peer name {network}2core"))
     run(subprocess_parser(f"sudo ip link set core2{network} netns core-r"))
     run(subprocess_parser(f"sudo ip link set {network}2core netns {network}-r"))
@@ -49,6 +48,8 @@ def nat_connections():
 def net_creation(dictionary: dict):
     """Use other functions to create the network"""
     print(f"Setting up the network")
+    # Create Core namespaces
+    [ns_create(f"core-{i}") for i in ["r","h"]]
     for key,value in dictionary.items():
         # print("Your hosts are:", v['hosts'])
         # print("Your subnet is:", v['subnet'])
@@ -82,6 +83,7 @@ def main():
     Networks = yaml_dict("./Final/topology.yml")
     # Use the dictionary 
     net_creation(Networks)
+    # Connect Core to NAT
     nat_connections()
 
 

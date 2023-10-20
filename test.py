@@ -1,4 +1,4 @@
-Networks = {
+Networks = [
     'corp': {  
         'hosts': [
             'corp-1', 
@@ -11,7 +11,7 @@ Networks = {
             'dmz-2'], 
         'subnet': '172.16.0.0/12'
     }
-}
+]
 
 for k,v in Networks.items():
     print("Your hosts are:", v['hosts'])
