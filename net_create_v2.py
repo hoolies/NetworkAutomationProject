@@ -17,10 +17,6 @@ def ns_create(namespace: str):
     """Check if the namespace exist"""
     run(subprocess_parser(f"sudo ip netns add {namespace}"))
 
-
-def create_core(dictionary: dict):
-    """Create the core and NAT"""
-    [ns_create(f"core-{i}") for i in ["rt","h"]]
     
 def bridger(network: str):
     """Function to create the bridge and bring it up"""
@@ -36,6 +32,20 @@ def network_connector(network: str, source: str, destination: str):
     run(subprocess_parser(f"sudo ip link set dev {network}-{destination}2{source} up"))
 
 
+def create_core(network: str):
+    """Create the core and NAT"""
+    [ns_create(f"core-{i}") for i in ["rt","h"]]
+    run(subprocess_parser(f"sudo ip link add core2{network} type veth peer name {network}2core"))
+    run(subprocess_parser(f"sudo ip link set core2{network} netns core-r"))
+    run(subprocess_parser(f"sudo ip link set {network}2core netns {network}-r"))
+
+
+def nat_connections():
+    """Create the NAT connection to the core"""
+    run(subprocess_parser(f"sudo ip link add core2nat type veth peer nat2core"))
+    run(subprocess_parser(f"sudo ip link set core2nat netns core"))
+
+
 def net_creation(dictionary: dict):
     """Use other functions to create the network"""
     print(f"Setting up the network")
@@ -44,7 +54,7 @@ def net_creation(dictionary: dict):
         # print("Your subnet is:", v['subnet'])
         print("Creating Namespaces for the network, router, bridge and host")
         # Router
-        ns_create(f"{key}-rt")
+        ns_create(f"{key}-r")
         # Host
         ns_create(f"{key}-h")
         # Ethernet bridges
@@ -56,10 +66,10 @@ def net_creation(dictionary: dict):
         network_connector(key,"h","br")
         # Router to bridge
         network_connector(key,"rt","br")
+        # Create connection to core
+        create_core(network)
     
         # Connect to need to connect to Core and provide IP
-
-
 
 
 def yaml_dict(file: str)-> dict:
@@ -74,6 +84,7 @@ def main():
     Networks = yaml_dict("./Final/topology.yml")
     # Use the dictionary 
     net_creation(Networks)
+    nat_connections()
 
 
 if __name__ == "__main__":
