@@ -45,6 +45,27 @@ def nat_connections():
     run(subprocess_parser(f"sudo ip link set core2nat netns core"))
 
 
+def veth_creation(key: str):
+    print(f"Creating Namespaces for:\n\t- Network: \t\t{key}\n\t- Router: \t\t{key}-r\n\t- Host: \t\t{key}-h")
+    # Namespace
+    ns_create(key)
+    # Router
+    ns_create(f"{key}-r")
+    # Host
+    ns_create(f"{key}-h")
+    # Ethernet bridges
+    print(f"Setting Ethernet Bridges")
+    bridger(key)
+    # vETHs
+    print(f"Create vETHs for {key}")
+    # Host to bridge connection
+    network_connector(key,"h","br")
+    # Router to bridge
+    network_connector(key,"r","br")
+    # Create connection to core
+    create_core(network)
+
+
 def net_creation(dictionary: dict):
     """Use other functions to create the network"""
     print(f"Setting up the network")
@@ -55,24 +76,7 @@ def net_creation(dictionary: dict):
     # Iterate through the nested dictionaries, network is a dictionary
     for network in networks_list:
         for key, vaulue in network.items():
-            print(f"Creating Namespaces for:\n\t- Network: {key}\n\t- Router: {key}-r\n\t- Host: {key}-h")
-            # Namespace
-            ns_create(key)
-            # Router
-            ns_create(f"{key}-r")
-            # Host
-            ns_create(f"{key}-h")
-            # Ethernet bridges
-            print(f"Setting Ethernet Bridges")
-            bridger(key)
-            # vETHs
-            print(f"Create vETHs for {key}")
-            # Host to bridge connection
-            network_connector(key,"h","br")
-            # Router to bridge
-            network_connector(key,"r","br")
-            # Create connection to core
-            create_core(network)
+
 
 
 def yaml_dict(file: str)-> dict:
@@ -84,7 +88,7 @@ def yaml_dict(file: str)-> dict:
 def main():
     """Main Function"""
     # Import the file as dictionary
-    Networks = yaml_dict("./Final/topology.yml")
+    Networks = yaml_dict("/home/student/Final/topology.yml")
     # Use the dictionary 
     net_creation(Networks)
     # Connect Core to NAT
