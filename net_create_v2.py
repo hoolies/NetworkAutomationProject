@@ -99,8 +99,17 @@ def ip_forwarding_activate():
     run(subprocess_parser(f"net.ipv6.conf.all.forwarding = 1' | sudo tee /etc/sysctl.d/10-ip-forwarding.conf"))
     run(subprocess_parser(f"sudo ip netns exec core-r sysctl -p /etc/sysctl.d/10-ip-forwarding.conf"))
 
+
 def ip_forwarding_per_subnet(network: str):
     run(subprocess_parser(f"sudo ip netns exec {network}-r sysctl -p /etc/sysctl.d/10-ip-forwarding.conf"))
+
+
+def assiging_ip(network: str):
+    """Assign IPs"""
+    run(subprocess_parser(f"sudo ip netns exec {network} ip addr add 10.255.1.0/24 dev {network}-h2br"))
+    run(subprocess_parser(f"sudo ip netns exec {network} ip link set dev {network}-h2br up"))
+    run(subprocess_parser(f"sudo ip netns exec {network} ip link set dev lo up"))
+
 
 def main():
     """Main Function"""
