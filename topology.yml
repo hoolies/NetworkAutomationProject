@@ -1,17 +1,8 @@
 ---
 Networks:
-  # core:
-    # router: yes
-    # switch: no
-    # hosts: []
 - corp:
-  hosts: ""
-  subnet: ""
-- dmz:
-  hosts: ""
-  subnet: ""
-  # nat:
-  #   router: yes
-  #   switch: yes
-  #   hosts: []
-  #   subnet: ""
+    subnet: "192.168.10.0/24"
+    dmz: False
+- web:
+    subnet: "192.168.11.0/25"
+    dmz: True
