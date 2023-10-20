@@ -1,0 +1,448 @@
+---
+- name: Setup the network
+  hosts: localhost
+  tasks:
+    - name: Create network namespaces
+      command: "sudo ip netns add {{ item }}"
+      with_items:
+        - ophost
+        - phost
+        - whost
+        - yhost
+        - prouter
+        - yrouter
+        - wrouter
+        - orouter
+        - crouter
+
+    - name: Create Ethernet bridges
+      command: "sudo ip link add name {{ item }} type bridge"
+      with_items:
+        - pbridge
+        - obridge
+        - ybridge
+        - wbridge
+
+    - name: Set Ethernet bridges up
+      command: "sudo ip link set dev {{ item }} up"
+      with_items:
+        - pbridge
+        - obridge
+        - ybridge
+        - wbridge
+
+    - name: Create veth pair phost2pbrg and pbrg2phost
+      command: "sudo ip link add phost2pbrg type veth peer name pbrg2phost"
+    
+    - name: Move phost2pbrg to the phost network namespace
+      command: "sudo ip link set phost2pbrg netns phost"
+    
+    - name: Set pbrg2phost master to pbridge
+      command: "sudo ip link set dev pbrg2phost master pbridge"
+    
+    - name: Bring up pbrg2phost
+      command: "sudo ip link set dev pbrg2phost up"
+
+    - name: Create veth pair phost2pbrg and pbrg2phost
+      command: "sudo ip link add prout2pbrg type veth peer name pbrg2prout"
+    
+    - name: Move phost2pbrg to the phost network namespace
+      command: "sudo ip link set prout2pbrg netns prouter"
+    
+    - name: Set pbrg2phost master to pbridge
+      command: "sudo ip link set dev pbrg2prout master pbridge"
+    
+    - name: Bring up pbrg2phost
+      command: "sudo ip link set dev pbrg2prout up"
+
+    - name: Create veth pair yhost2ybrg and ybrg2yhost
+      command: "sudo ip link add yhost2ybrg type veth peer name ybrg2yhost"
+    
+    - name: Move yhost2ybrg to the yhost network namespace
+      command: "sudo ip link set yhost2ybrg netns yhost"
+    
+    - name: Set ybrg2yhost master to ybridge
+      command: "sudo ip link set dev ybrg2yhost master ybridge"
+    
+    - name: Bring up ybrg2yhost
+      command: "sudo ip link set dev ybrg2yhost up"
+
+    - name: Create veth pair yrout2ybrg and ybrg2yrout
+      command: "sudo ip link add yrout2ybrg type veth peer name ybrg2yrout"
+    
+    - name: Move yrout2ybrg to the yrouter network namespace
+      command: "sudo ip link set yrout2ybrg netns yrouter"
+    
+    - name: Set ybrg2yrout master to ybridge
+      command: "sudo ip link set dev ybrg2yrout master ybridge"
+    
+    - name: Bring up ybrg2yrout
+      command: "sudo ip link set dev ybrg2yrout up"   
+
+    - name: Create veth pair wrout2wbrg and wbrg2wrout
+      command: "sudo ip link add wrout2wbrg type veth peer name wbrg2wrout"
+    
+    - name: Move wrout2wbrg to the wrouter network namespace
+      command: "sudo ip link set wrout2wbrg netns wrouter"
+    
+    - name: Set wbrg2wrout master to wbridge
+      command: "sudo ip link set dev wbrg2wrout master wbridge"
+    
+    - name: Bring up wbrg2wrout
+      command: "sudo ip link set dev wbrg2wrout up"
+
+    - name: Create veth pair ohost2obrg and obrg2ohost
+      command: "sudo ip link add ohost2obrg type veth peer name obrg2ohost"
+    
+    - name: Move ohost2obrg to the ohost network namespace
+      command: "sudo ip link set ohost2obrg netns ohost"
+    
+    - name: Set obrg2ohost master to obridge
+      command: "sudo ip link set dev obrg2ohost master obridge"
+    
+    - name: Bring up obrg2ohost
+      command: "sudo ip link set dev obrg2ohost up"
+
+    - name: Create veth pair orout2obrg and obrg2orout
+      command: "sudo ip link add orout2obrg type veth peer name obrg2orout"
+    
+    - name: Move orout2obrg to the orouter network namespace
+      command: "sudo ip link set orout2obrg netns orouter"
+    
+    - name: Set obrg2orout master to obridge
+      command: "sudo ip link set dev obrg2orout master obridge"
+    
+    - name: Bring up obrg2orout
+      command: "sudo ip link set dev obrg2orout up"
+
+    - name: Create veth pair crout2prout and prout2crout
+      command: "sudo ip link add crout2prout type veth peer name prout2crout"
+    
+    - name: Move crout2prout to the crouter network namespace
+      command: "sudo ip link set crout2prout netns crouter"
+    
+    - name: Move prout2crout to the prouter network namespace
+      command: "sudo ip link set prout2crout netns prouter"
+
+    - name: Create veth pair crout2yrout and yrout2crout
+      command: "sudo ip link add crout2yrout type veth peer name yrout2crout"
+    
+    - name: Move crout2yrout to the crouter network namespace
+      command: "sudo ip link set crout2yrout netns crouter"
+    
+    - name: Move yrout2crout to the yrouter network namespace
+      command: "sudo ip link set yrout2crout netns yrouter"
+
+    - name: Create veth pair crout2wrout and wrout2crout
+      command: "sudo ip link add crout2wrout type veth peer name wrout2crout"
+    
+    - name: Move crout2wrout to the crouter network namespace
+      command: "sudo ip link set crout2wrout netns crouter"
+    
+    - name: Move wrout2crout to the wrouter network namespace
+      command: "sudo ip link set wrout2crout netns wrouter"
+
+    - name: Create veth pair crout2orout and orout2crout
+      command: "sudo ip link add crout2orout type veth peer name orout2crout"
+    
+    - name: Move crout2orout to the crouter network namespace
+      command: "sudo ip link set crout2orout netns crouter"
+    
+    - name: Move orout2crout to the orouter network namespace
+      command: "sudo ip link set orout2crout netns orouter"
+
+    - name: Create veth pair crout2nat and nat2crout
+      command: "sudo ip link add crout2nat type veth peer name nat2crout"
+    
+    - name: Move crout2nat to the crouter network namespace
+      command: "sudo ip link set crout2nat netns crouter"
+    
+    - name: Move nat2crout to the root namespace (leave it dangle)
+      command: "sudo ip link set nat2crout netns 1"
+
+- name: Setup IP Forwarding
+  hosts: localhost
+  tasks:
+    - name: Disable bridge-nf-call-iptables
+      command: "sudo sysctl net.bridge.bridge-nf-call-iptables=0"
+
+    - name: Create 10-ip-forwarding.conf file
+      copy:
+        content: |
+          net.ipv4.ip_forward = 1
+          net.ipv6.conf.default.forwarding = 1
+          net.ipv6.conf.all.forwarding = 1
+        dest: /etc/sysctl.d/10-ip-forwarding.conf
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Apply sysctl settings to prouter
+      command: "sudo ip netns exec prouter sysctl -p /etc/sysctl.d/10-ip-forwarding.conf"
+
+    - name: Apply sysctl settings to yrouter
+      command: "sudo ip netns exec yrouter sysctl -p /etc/sysctl.d/10-ip-forwarding.conf"
+
+    - name: Apply sysctl settings to wrouter
+      command: "sudo ip netns exec wrouter sysctl -p /etc/sysctl.d/10-ip-forwarding.conf"
+
+    - name: Apply sysctl settings to orouter
+      command: "sudo ip netns exec orouter sysctl -p /etc/sysctl.d/10-ip-forwarding.conf"
+
+    - name: Apply sysctl settings to crouter
+      command: "sudo ip netns exec crouter sysctl -p /etc/sysctl.d/10-ip-forwarding.conf"
+
+- name: Assign IP Addresses
+  hosts: localhost
+  tasks:
+    - name: Assign IP address to phost LAN link
+      command: "sudo ip netns exec phost ip addr add 10.1.1.21/24 dev phost2pbrg"
+    
+    - name: Enable phost LAN link
+      command: "sudo ip netns exec phost ip link set dev phost2pbrg up"
+    
+    - name: Enable phost loopback interface
+      command: "sudo ip netns exec phost ip link set dev lo up"
+
+    - name: Assign IP address to prouter LAN link
+      command: "sudo ip netns exec prouter ip addr add 10.1.1.1/24 dev prout2pbrg"
+
+    - name: Enable prouter LAN link
+      command: "sudo ip netns exec prouter ip link set dev prout2pbrg up"
+
+    - name: Enable prouter loopback interface
+      command: "sudo ip netns exec prouter ip link set dev lo up"
+
+    - name: Assign IP address to ohost LAN link
+      command: "sudo ip netns exec ohost ip addr add 10.1.4.21/24 dev ohost2obrg"
+
+    - name: Enable ohost LAN link
+      command: "sudo ip netns exec ohost ip link set dev ohost2obrg up"
+
+    - name: Enable ohost loopback interface
+      command: "sudo ip netns exec ohost ip link set dev lo up"
+
+    - name: Assign IP address to orouter LAN link
+      command: "sudo ip netns exec orouter ip addr add 10.1.4.1/24 dev orout2obrg"
+
+    - name: Enable orouter LAN link
+      command: "sudo ip netns exec orouter ip link set dev orout2obrg up"
+
+    - name: Enable orouter loopback interface
+      command: "sudo ip netns exec orouter ip link set dev lo up"
+
+    - name: Assign IP address to yhostA LAN link
+      command: "sudo ip netns exec yhost ip addr add 10.1.2.21/24 dev yhost2ybrg"
+
+    - name: Enable yhostA LAN link
+      command: "sudo ip netns exec yhost ip link set dev yhost2ybrg up"
+
+    - name: Enable yhostA loopback interface
+      command: "sudo ip netns exec yhost ip link set dev lo up"
+
+    - name: Assign IP address to yrouter LAN link
+      command: "sudo ip netns exec yrouter ip addr add 10.1.2.1/24 dev yrout2ybrg"
+
+    - name: Enable yrouter LAN link
+      command: "sudo ip netns exec yrouter ip link set dev yrout2ybrg up"
+
+    - name: Enable yrouter loopback interface
+      command: "sudo ip netns exec yrouter ip link set dev lo up"
+
+    - name: Assign IP address to whost LAN link
+      command: "sudo ip netns exec whost ip addr add 10.1.3.21/24 dev whost2wbrg"
+
+    - name: Enable whost LAN link
+      command: "sudo ip netns exec whost ip link set dev whost2wbrg up"
+
+    - name: Enable whost loopback interface
+      command: "sudo ip netns exec whost ip link set dev lo up"
+
+    - name: Assign IP address to wrouterA LAN link
+      command: "sudo ip netns exec wrouter ip addr add 10.1.3.1/24 dev wrout2wbrg"
+
+    - name: Enable wrouterA LAN link
+      command: "sudo ip netns exec wrouter ip link set dev wrout2wbrg up"
+
+    - name: Enable wrouterA loopback interface
+      command: "sudo ip netns exec wrouter ip link set dev lo up"
+
+    - name: Assign IP address to PURPLE WAN LINK (PROUTER -> CROUTER)
+      command: "sudo ip netns exec prouter ip addr add 10.1.5.2/30 dev prout2crout"
+
+    - name: Enable PURPLE WAN LINK (PROUTER -> CROUTER)
+      command: "sudo ip netns exec prouter ip link set dev prout2crout up"
+
+    - name: Enable PURPLE WAN LINK (PROUTER -> CROUTER) loopback interface
+      command: "sudo ip netns exec prouter ip link set dev lo up"
+
+    - name: Assign IP address to PURPLE WAN LINK (CROUTER -> PROUTER WAN link)
+      command: "sudo ip netns exec crouter ip addr add 10.1.5.1/30 dev crout2prout"
+
+    - name: Enable PURPLE WAN LINK (CROUTER -> PROUTER WAN link)
+      command: "sudo ip netns exec crouter ip link set dev crout2prout up"
+
+    - name: Enable PURPLE WAN LINK (CROUTER -> PROUTER WAN link) loopback interface
+      command: "sudo ip netns exec crouter ip link set dev lo up"
+
+- name: Configure WAN Links and DHCP Prevention
+  hosts: localhost
+  tasks:
+    - name: Configure YELLOW WAN LINK (YROUTER -> CROUTER WAN LINK)
+      command: "sudo ip netns exec yrouter ip addr add 10.1.5.6/30 dev yrout2crout"
+
+    - name: Enable YELLOW WAN LINK (YROUTER -> CROUTER WAN LINK)
+      command: "sudo ip netns exec yrouter ip link set dev yrout2crout up"
+
+    - name: Enable YELLOW WAN LINK (YROUTER -> CROUTER WAN LINK) loopback interface
+      command: "sudo ip netns exec yrouter ip link set dev lo up"
+
+    - name: Configure YELLOW WAN LINK (CROUTER -> YROUTER WAN LINK)
+      command: "sudo ip netns exec crouter ip addr add 10.1.5.5/30 dev crout2yrout"
+
+    - name: Enable YELLOW WAN LINK (CROUTER -> YROUTER WAN LINK)
+      command: "sudo ip netns exec crouter ip link set dev crout2yrout up"
+
+    - name: Enable YELLOW WAN LINK (CROUTER -> YROUTER WAN LINK) loopback interface
+      command: "sudo ip netns exec crouter ip link set dev lo up"
+
+    - name: Configure WHITE WAN LINK (WROUTER -> CROUTER)
+      command: "sudo ip netns exec wrouter ip addr add 10.1.5.10/30 dev wrout2crout"
+
+    - name: Enable WHITE WAN LINK (WROUTER -> CROUTER)
+      command: "sudo ip netns exec wrouter ip link set dev wrout2crout up"
+
+    - name: Enable WHITE WAN LINK (WROUTER -> CROUTER) loopback interface
+      command: "sudo ip netns exec wrouter ip link set dev lo up"
+
+    - name: Configure WHITE WAN LINK (CROUTER -> WROUTER)
+      command: "sudo ip netns exec crouter ip addr add 10.1.5.9/30 dev crout2wrout"
+
+    - name: Enable WHITE WAN LINK (CROUTER -> WROUTER)
+      command: "sudo ip netns exec crouter ip link set dev crout2wrout up"
+
+    - name: Enable WHITE WAN LINK (CROUTER -> WROUTER) loopback interface
+      command: "sudo ip netns exec crouter ip link set dev lo up"
+
+    - name: Configure ORANGE WAN LINK (OROUTER -> CROUTER)
+      command: "sudo ip netns exec orouter ip addr add 10.1.5.14/30 dev orout2crout"
+
+    - name: Enable ORANGE WAN LINK (OROUTER -> CROUTER)
+      command: "sudo ip netns exec orouter ip link set dev orout2crout up"
+
+    - name: Enable ORANGE WAN LINK (OROUTER -> CROUTER) loopback interface
+      command: "sudo ip netns exec orouter ip link set dev lo up"
+
+    - name: Configure ORANGE WAN LINK (CROUTER -> OROUTER)
+      command: "sudo ip netns exec crouter ip addr add 10.1.5.13/30 dev crout2orout"
+
+    - name: Enable ORANGE WAN LINK (CROUTER -> OROUTER)
+      command: "sudo ip netns exec crouter ip link set dev crout2orout up"
+
+    - name: Enable ORANGE WAN LINK (CROUTER -> OROUTER) loopback interface
+      command: "sudo ip netns exec crouter ip link set dev lo up"
+
+    - name: Workaround to prevent DHCP from assigning IPs to devices
+      command: "sudo ip addr add 192.168.90.3/24 dev pbrg2prout"
+
+    - name: Workaround to prevent DHCP from assigning IPs to devices
+      command: "sudo ip addr add 192.168.90.4/24 dev pbridge"
+
+- name: Configure NAT Link and Verify Veths
+  hosts: localhost
+  tasks:
+    - name: Configure NAT link (CROUTER -> NAT)
+      command: "sudo ip netns exec crouter ip addr add 10.1.5.17/30 dev crout2nat"
+
+    - name: Enable NAT link (CROUTER -> NAT)
+      command: "sudo ip netns exec crouter ip link set dev crout2nat up"
+
+    - name: Configure NAT link (NAT -> CROUTER)
+      command: "sudo ip addr add 10.1.5.18/30 dev nat2crout"
+
+    - name: Verify Veths
+      command: "sudo ip netns exec phost ip -c link | grep -A 2 phost"
+
+    - name: Verify Veths
+      command: "sudo ip netns exec yhost ip -c link | grep -A 2 yhost"
+
+    - name: Verify Veths
+      command: "sudo ip netns exec whost ip -c link | grep -A 2 whost"
+
+    - name: Verify Veths
+      command: "sudo ip netns exec ohost ip -c link | grep -A 2 ohost"
+
+    - name: Verify Veths
+      command: "sudo ip netns exec crouter ip -c link | grep -A 5 rout"
+
+    - name: Verify Veths
+      command: "sudo ip netns exec prouter ip -c link | grep -A 2 prout"
+
+    - name: Verify Veths
+      command: "sudo ip netns exec yrouter ip -c link | grep -A 2 yrout"
+
+    - name: Verify Veths
+      command: "sudo ip netns exec wrouter ip -c link | grep -A 2 wrout"
+
+    - name: Verify Veths
+      command: "sudo ip netns exec orouter ip -c link | grep -A 2 orout"
+
+    - name: Verify Veths in the root namespace
+      command: "ip -c l"
+
+- name: Configure Static and Default Routes
+  hosts: localhost
+  tasks:
+    - name: Configure static routes on the core router
+      command: "sudo ip netns exec crouter ip route add 10.1.1.0/24 via 10.1.5.2"
+    
+    - name: Configure static routes on the core router
+      command: "sudo ip netns exec crouter ip route add 10.1.2.0/24 via 10.1.5.6"
+
+    - name: Configure static routes on the core router
+      command: "sudo ip netns exec crouter ip route add 10.1.3.0/24 via 10.1.5.10"
+
+    - name: Configure static routes on the core router
+      command: "sudo ip netns exec crouter ip route add 10.1.4.0/24 via 10.1.5.14"
+
+    - name: Configure static routes on the core router
+      command: "sudo ip netns exec crouter ip route add default via 10.1.5.18"
+
+    - name: Configure default route on phost
+      command: "sudo ip netns exec phost ip route add default via 10.1.1.1"
+
+    - name: Configure default route on yhost
+      command: "sudo ip netns exec yhost ip route add default via 10.1.2.1"
+
+    - name: Configure default route on whost
+      command: "sudo ip netns exec whost ip route add default via 10.1.3.1"
+
+    - name: Configure default route on ohost
+      command: "sudo ip netns exec ohost ip route add default via 10.1.4.1"
+
+    - name: Configure default route on prouter
+      command: "sudo ip netns exec prouter ip route add default via 10.1.5.1"
+
+    - name: Configure default route on yrouter
+      command: "sudo ip netns exec yrouter ip route add default via 10.1.5.5"
+
+    - name: Configure default route on wrouter
+      command: "sudo ip netns exec wrouter ip route add default via 10.1.5.9"
+
+    - name: Configure default route on orouter
+      command: "sudo ip netns exec orouter ip route add default via 10.1.5.13"
+
+- name: Configure NAT and Test IP Connectivity
+  hosts: localhost
+  tasks:
+    - name: Enable NAT function
+      command: |
+        sudo iptables -t nat -F
+        sudo iptables -t nat -A POSTROUTING -s 10.1.0.0/16 -o ens3 -j MASQUERADE
+        sudo iptables -t filter -A FORWARD -i ens3 -o nat2crout -j ACCEPT
+        sudo iptables -t filter -A FORWARD -o ens3 -i nat2crout -j ACCEPT
+        sudo ip route add 10.1.0.0/16 via 10.1.5.17
+      become: true
+
+    - name: Test IP connectivity including NAT
+      command: "fping 10.0.0.1 10.1.1.1 10.1.1.21 10.1.2.1 10.1.2.21 10.1.3.1 10.1.3.21 10.1.4.1 10.1.4.21 8.8.8.8"
