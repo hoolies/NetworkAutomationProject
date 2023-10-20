@@ -46,7 +46,7 @@ def nat_connections():
 
 
 def veth_creation(key: str):
-    print(f"Creating Namespaces for:\n\t- Network: \t\t{key}\n\t- Router: \t\t{key}-r\n\t- Host: \t\t{key}-h")
+    print(f"Creating Namespaces for:\n\t- Network: \t{key}\n\t- Router: \t{key}-r\n\t- Host: \t{key}-h")
     # Namespace
     ns_create(key)
     # Router
@@ -77,6 +77,8 @@ def net_creation(dictionary: dict):
             veth_creation(key)
             # Create connection to core
             create_core(key)
+            # IP forwarding for the network:
+            ip_forwarding_per_subnet(key)
 
 
 def yaml_dict(file: str)-> dict:
@@ -84,6 +86,16 @@ def yaml_dict(file: str)-> dict:
     with open(file, "r") as yml:
        return safe_load(yml)  # pass back to the caller python data
 
+
+def ip_forwarding_activate():
+    run(subprocess_parser(f"sudo sysctl net.bridge.bridge-nf-call-iptables=0"))
+    run(subprocess_parser(f"echo 'net.ipv4.ip_forward = 1"))
+    run(subprocess_parser(f"net.ipv6.conf.default.forwarding = 1"))
+    run(subprocess_parser(f"net.ipv6.conf.all.forwarding = 1' | sudo tee /etc/sysctl.d/10-ip-forwarding.conf"))
+    run(subprocess_parser(f"sudo ip netns exec core-r sysctl -p /etc/sysctl.d/10-ip-forwarding.conf"))
+
+def ip_forwarding_per_subnet(network: str):
+    run(subprocess_parser(f"sudo ip netns exec {network}-r sysctl -p /etc/sysctl.d/10-ip-forwarding.conf"))
 
 def main():
     """Main Function"""
@@ -93,7 +105,8 @@ def main():
     net_creation(Networks)
     # Connect Core to NAT
     nat_connections()
-
+    # Activate IP Forwarding
+    ip_forwarding_activate()
 
 if __name__ == "__main__":
     main()
