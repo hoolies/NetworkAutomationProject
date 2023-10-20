@@ -1,0 +1,66 @@
+---
+- name: Clean Up Network
+  hosts: localhost
+  gather_facts: no
+  become: yes
+  tasks:
+    - name: Include YAML configuration
+      include_vars:
+        file: /home/student/mycode/test/network.yml
+        name: network_dict
+
+    - name: Remove vETHs for Routers
+      command: ip link delete veth{{ item.key }}2rt type veth
+      loop: "{{ network_dict | dict2items }}"
+      when:
+        - item.value.subnet
+      ignore_errors: yes
+
+    - name: Remove vETHs for Hosts
+      command: ip link delete veth{{ item.key }}2br type veth
+      loop: "{{ network_dict | dict2items }}"
+      when:
+        - item.value.hosts
+      ignore_errors: yes
+
+    - name: Set Ethernet Bridges DOWN
+      command: ip link set dev {{ item.key }}br down
+      loop: "{{ network_dict | dict2items }}"
+      when:
+        - item.value.hosts or item.value.subnet
+      ignore_errors: yes
+
+    - name: Delete Ethernet Bridges
+      command: ip link delete name {{ item.key }}br type bridge
+      loop: "{{ network_dict | dict2items }}"
+      when:
+        - item.value.hosts or item.value.subnet
+      ignore_errors: yes
+
+    - name: Remove Router Namespaces
+      command: ip netns delete {{ item.key }}rt
+      loop: "{{ network_dict | dict2items }}"
+      when:
+        - item.value.hosts or item.value.subnet
+      ignore_errors: yes
+
+    - name: Remove Host Namespaces
+      command: ip netns delete {{ item.key }}h
+      loop: "{{ network_dict | dict2items }}"
+      when:
+        - item.value.hosts
+      ignore_errors: yes
+
+    - name: Remove Bridge Namespaces
+      command: ip netns delete {{ item.key }}br
+      loop: "{{ network_dict | dict2items }}"
+      when:
+        - item.value.hosts or item.value.subnet
+      ignore_errors: yes
+
+    - name: Remove Network Namespaces
+      command: ip netns delete {{ item.key }}
+      loop: "{{ network_dict | dict2items }}"
+      when:
+        - item.value.hosts or item.value.subnet
+      ignore_errors: yes
