@@ -45,12 +45,12 @@ def nat_connections():
     run(subprocess_parser(f"sudo ip link set core2nat netns core"))
 
 
-def net_creation(dictionary: dict):
+def net_creation(list_of_dicts: list):
     """Use other functions to create the network"""
     print(f"Setting up the network")
     # Create Core namespaces
     [ns_create(f"core-{i}") for i in ["r","h"]]
-    for key,value in dictionary.items():
+    for dictionary in list_of_dicts:
         # print("Your hosts are:", v['hosts'])
         # print("Your subnet is:", v['subnet'])
         print("Creating Namespaces for the network, router, bridge and host")

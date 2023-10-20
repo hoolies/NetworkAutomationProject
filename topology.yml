@@ -1,7 +1,8 @@
 ---
-- corp:
+networks:
+- corp: 
     subnet: "192.168.10.0/24"
-    dmz: False
+    dmz: False 
 - web:
     subnet: "192.168.11.0/25"
     dmz: True
