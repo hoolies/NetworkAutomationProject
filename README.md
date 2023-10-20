@@ -59,7 +59,10 @@ Before you begin, ensure you have installed the following:
 These are network deployment automations tools.
 We ask the user to specify the name and the subnet of the network.
 
+\
 **This is the Desing:**
+\
+\
 ![](https://raw.githubusercontent.com/hoolies/NetworkAutomationProject/main/Diagram.png)
 
 We will always generate the NAT and the Core. The core will handle the core routing and the NAT will handle the firewall.
