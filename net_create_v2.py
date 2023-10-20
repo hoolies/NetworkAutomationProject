@@ -62,8 +62,6 @@ def veth_creation(key: str):
     network_connector(key,"h","br")
     # Router to bridge
     network_connector(key,"r","br")
-    # Create connection to core
-    create_core(network)
 
 
 def net_creation(dictionary: dict):
@@ -76,7 +74,9 @@ def net_creation(dictionary: dict):
     # Iterate through the nested dictionaries, network is a dictionary
     for network in networks_list:
         for key, vaulue in network.items():
-
+            veth_creation(key)
+            # Create connection to core
+            create_core(key)
 
 
 def yaml_dict(file: str)-> dict:
