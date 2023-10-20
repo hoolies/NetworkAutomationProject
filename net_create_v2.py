@@ -43,6 +43,10 @@ def nat_connections():
     """Create the NAT connection to the core"""
     run(subprocess_parser(f"sudo ip link add core2nat type veth peer nat2core"))
     run(subprocess_parser(f"sudo ip link set core2nat netns core"))
+    run(subprocess_parser(f"sudo ip netns exec core-r ip addr add 10.225.5.17/30 dev core-r2nat"))
+    run(subprocess_parser(f"sudo ip netns exec core-r ip link set dev core-r2nat up"))
+    run(subprocess_parser(f"sudo ip addr add 10.225.5.18/30 dev nat2core-r"))
+
 
 
 def veth_creation(key: str):
@@ -79,6 +83,8 @@ def net_creation(dictionary: dict):
             create_core(key)
             # IP forwarding for the network:
             ip_forwarding_per_subnet(key)
+            # Assign IPs
+            assiging_ip(key)
 
 
 def yaml_dict(file: str)-> dict:
@@ -86,11 +92,7 @@ def yaml_dict(file: str)-> dict:
     with open(file, "r") as yml:
        return safe_load(yml)  # pass back to the caller python data
         
-def assiging_ip(network: str):
-    # phost LAN link
-    run(subprocess_parser(f"sudo ip netns exec {network} ip addr add 10.255.1.0/24 dev {network}-h2br"))
-    run(subprocess_parser(f"sudo ip netns exec {network} ip link set dev {network}-h2br up"))
-    run(subprocess_parser(f"sudo ip netns exec {network} ip link set dev lo up"))
+
 
 def ip_forwarding_activate():
     run(subprocess_parser(f"sudo sysctl net.bridge.bridge-nf-call-iptables=0"))
@@ -111,16 +113,49 @@ def assiging_ip(network: str):
     run(subprocess_parser(f"sudo ip netns exec {network} ip link set dev lo up"))
 
 
+def assiging_ip(network: str):
+    # phost LAN link
+    run(subprocess_parser(f"sudo ip netns exec {network} ip addr add 10.255.1.0/24 dev {network}-h2br"))
+    run(subprocess_parser(f"sudo ip netns exec {network} ip link set dev {network}-h2br up"))
+    run(subprocess_parser(f"sudo ip netns exec {network} ip link set dev lo up"))
+
+
+def assign_static_routes(network: str):
+    """Create static routes"""
+    # Configure routes on the core router
+    run(subprocess_parser(f"sudo ip netns exec {network} ip route add 10.255.1.0/24 via 10.255.5.2"))
+    run(subprocess_parser(f"sudo ip netns exec {network} ip route add default via 10.225.5.18"))
+    #Configure default routes on the hosts
+    run(subprocess_parser(f"sudo ip netns exec {network} ip route add default via 10.225.5.18"))
+    #Configure the default routes on the edge routers
+    run(subprocess_parser(f"sudo ip netns exec {network} ip route add default via 10.225.5.18"))
+
+
+# def prevent_DHCP(network: str):
+#     """Prevent DHCP"""
+#     run(subprocess_parser(f"sudo ip addr add 192.168.90.3/24 dev {network}-br2r"))
+#     run(subprocess_parser(f"sudo ip addr add 192.168.90.4/24 dev {network}-br"))
+
+
+def enable_nat():
+    # enabling NAT
+    run(subprocess_parser(f"sudo iptables -t nat -F"))
+    run(subprocess_parser(f"sudo iptables -t nat    -A POSTROUTING -s 10.225.0.0/16 -o ens3 -j MASQUERADE"))
+    run(subprocess_parser(f"sudo iptables -t filter -A FORWARD -i ens3 -o nat2crout -j ACCEPT"))
+    run(subprocess_parser(f"sudo iptables -t filter -A FORWARD -o ens3 -i nat2crout -j ACCEPT"))
+    run(subprocess_parser(f"sudo ip route add 10.225.0.0/16 via 10.225.5.17"))
+
+
 def main():
     """Main Function"""
     # Import the file as dictionary
     Networks = yaml_dict("/home/student/Final/topology.yml")
     # Use the dictionary 
     net_creation(Networks)
-    # Connect Core to NAT
-    nat_connections()
     # Activate IP Forwarding
     ip_forwarding_activate()
+    # Connect Core to NAT
+    nat_connections()
 
 if __name__ == "__main__":
     main()
