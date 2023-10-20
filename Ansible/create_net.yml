@@ -7,12 +7,10 @@
       with_items:
         - ophost
         - phost
-        - whost
         - yhost
         - ohost
         - prouter
         - yrouter
-        - wrouter
         - orouter
         - crouter
 
@@ -22,7 +20,7 @@
         - pbridge
         - obridge
         - ybridge
-        - wbridge
+
 
     - name: Set Ethernet bridges up
       command: "sudo ip link set dev {{ item }} up"
@@ -30,7 +28,6 @@
         - pbridge
         - obridge
         - ybridge
-        - wbridge
 
     - name: Create veth pair phost2pbrg and pbrg2phost
       command: "sudo ip link add phost2pbrg type veth peer name pbrg2phost"
@@ -80,30 +77,6 @@
     - name: Bring up ybrg2yrout
       command: "sudo ip link set dev ybrg2yrout up"   
 
-    - name: Create veth pair wrout2wbrg and wbrg2wrout
-      command: "sudo ip link add wrout2wbrg type veth peer name wbrg2wrout"
-    
-    - name: Move wrout2wbrg to the wrouter network namespace
-      command: "sudo ip link set wrout2wbrg netns wrouter"
-
-    - name: Move wrout2wbrg to the wrouter network namespace1
-      command: "sudo ip link add whost2wbrg type veth peer name wbrg2whost"
-
-    - name: Move wrout2wbrg to the wrouter network namespace2
-      command: "sudo ip link set whost2wbrg netns whost"
-
-    - name: Move wrout2wbrg to the wrouter network namespace3
-      command: "sudo ip link set dev wbrg2whost master wbridge"
-
-    - name: Move wrout2wbrg to the wrouter network namespace4
-      command: "sudo ip link set dev wbrg2whost up"
-
-    - name: Set wbrg2wrout master to wbridge
-      command: "sudo ip link set dev wbrg2wrout master wbridge"
-    
-    - name: Bring up wbrg2wrout
-      command: "sudo ip link set dev wbrg2wrout up"
-
     - name: Create veth pair ohost2obrg and obrg2ohost
       command: "sudo ip link add ohost2obrg type veth peer name obrg2ohost"
       ignore_errors: true
@@ -147,15 +120,6 @@
     - name: Move yrout2crout to the yrouter network namespace
       command: "sudo ip link set yrout2crout netns yrouter"
 
-    - name: Create veth pair crout2wrout and wrout2crout
-      command: "sudo ip link add crout2wrout type veth peer name wrout2crout"
-    
-    - name: Move crout2wrout to the crouter network namespace
-      command: "sudo ip link set crout2wrout netns crouter"
-    
-    - name: Move wrout2crout to the wrouter network namespace
-      command: "sudo ip link set wrout2crout netns wrouter"
-
     - name: Create veth pair crout2orout and orout2crout
       command: "sudo ip link add crout2orout type veth peer name orout2crout"
     
@@ -177,6 +141,7 @@
 - name: Setup IP Forwarding
   hosts: localhost
   tasks:
+
     - name: Disable bridge-nf-call-iptables
       command: "sudo sysctl net.bridge.bridge-nf-call-iptables=0"
 
@@ -196,9 +161,6 @@
 
     - name: Apply sysctl settings to yrouter
       command: "sudo ip netns exec yrouter sysctl -p /etc/sysctl.d/10-ip-forwarding.conf"
-
-    - name: Apply sysctl settings to wrouter
-      command: "sudo ip netns exec wrouter sysctl -p /etc/sysctl.d/10-ip-forwarding.conf"
 
     - name: Apply sysctl settings to orouter
       command: "sudo ip netns exec orouter sysctl -p /etc/sysctl.d/10-ip-forwarding.conf"
@@ -263,26 +225,6 @@
     - name: Enable yrouter loopback interface
       command: "sudo ip netns exec yrouter ip link set dev lo up"
 
-    - name: Assign IP address to whost LAN link
-      command: "sudo ip netns exec whost ip addr add 10.1.3.21/24 dev whost2wbrg"
-      ignore_errors: true
-
-    - name: Enable whost LAN link
-      command: "sudo ip netns exec whost ip link set dev whost2wbrg up"
-      ignore_errors: true
-
-    - name: Enable whost loopback interface
-      command: "sudo ip netns exec whost ip link set dev lo up"
-
-    - name: Assign IP address to wrouterA LAN link
-      command: "sudo ip netns exec wrouter ip addr add 10.1.3.1/24 dev wrout2wbrg"
-
-    - name: Enable wrouterA LAN link
-      command: "sudo ip netns exec wrouter ip link set dev wrout2wbrg up"
-
-    - name: Enable wrouterA loopback interface
-      command: "sudo ip netns exec wrouter ip link set dev lo up"
-
     - name: Assign IP address to PURPLE WAN LINK (PROUTER -> CROUTER)
       command: "sudo ip netns exec prouter ip addr add 10.1.5.2/30 dev prout2crout"
 
@@ -320,24 +262,6 @@
       command: "sudo ip netns exec crouter ip link set dev crout2yrout up"
 
     - name: Enable YELLOW WAN LINK (CROUTER -> YROUTER WAN LINK) loopback interface
-      command: "sudo ip netns exec crouter ip link set dev lo up"
-
-    - name: Configure WHITE WAN LINK (WROUTER -> CROUTER)
-      command: "sudo ip netns exec wrouter ip addr add 10.1.5.10/30 dev wrout2crout"
-
-    - name: Enable WHITE WAN LINK (WROUTER -> CROUTER)
-      command: "sudo ip netns exec wrouter ip link set dev wrout2crout up"
-
-    - name: Enable WHITE WAN LINK (WROUTER -> CROUTER) loopback interface
-      command: "sudo ip netns exec wrouter ip link set dev lo up"
-
-    - name: Configure WHITE WAN LINK (CROUTER -> WROUTER)
-      command: "sudo ip netns exec crouter ip addr add 10.1.5.9/30 dev crout2wrout"
-
-    - name: Enable WHITE WAN LINK (CROUTER -> WROUTER)
-      command: "sudo ip netns exec crouter ip link set dev crout2wrout up"
-
-    - name: Enable WHITE WAN LINK (CROUTER -> WROUTER) loopback interface
       command: "sudo ip netns exec crouter ip link set dev lo up"
 
     - name: Configure ORANGE WAN LINK (OROUTER -> CROUTER)
@@ -383,9 +307,6 @@
       command: "sudo ip netns exec yhost ip -c link | grep -A 2 yhost"
 
     - name: Verify Veths
-      command: "sudo ip netns exec whost ip -c link | grep -A 2 whost"
-
-    - name: Verify Veths
       command: "sudo ip netns exec ohost ip -c link | grep -A 2 ohost"
 
     - name: Verify Veths
@@ -396,9 +317,6 @@
 
     - name: Verify Veths
       command: "sudo ip netns exec yrouter ip -c link | grep -A 2 yrout"
-
-    - name: Verify Veths
-      command: "sudo ip netns exec wrouter ip -c link | grep -A 2 wrout"
 
     - name: Verify Veths
       command: "sudo ip netns exec orouter ip -c link | grep -A 2 orout"
@@ -430,9 +348,6 @@
     - name: Configure default route on yhost
       command: "sudo ip netns exec yhost ip route add default via 10.1.2.1"
 
-    - name: Configure default route on whost
-      command: "sudo ip netns exec whost ip route add default via 10.1.3.1"
-
     - name: Configure default route on ohost
       command: "sudo ip netns exec ohost ip route add default via 10.1.4.1"
 
@@ -441,9 +356,6 @@
 
     - name: Configure default route on yrouter
       command: "sudo ip netns exec yrouter ip route add default via 10.1.5.5"
-
-    - name: Configure default route on wrouter
-      command: "sudo ip netns exec wrouter ip route add default via 10.1.5.9"
 
     - name: Configure default route on orouter
       command: "sudo ip netns exec orouter ip route add default via 10.1.5.13"
