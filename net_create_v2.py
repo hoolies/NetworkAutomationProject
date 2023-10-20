@@ -2,6 +2,7 @@
 """Network Automation Project, Howard's and Chrysanthos' take"""
 from subprocess import run
 from yaml import safe_load
+from ipaddress import IPv4Network
 
 
 def subprocess_parser(command: str) -> list:
@@ -77,7 +78,7 @@ def net_creation(dictionary: dict):
     networks_list = dictionary['networks']
     # Iterate through the nested dictionaries, network is a dictionary
     for network in networks_list:
-        for key, vaulue in network.items():
+        for key, value in network.items():
             veth_creation(key)
             # Create connection to core
             create_core(key)
@@ -85,6 +86,8 @@ def net_creation(dictionary: dict):
             ip_forwarding_per_subnet(key)
             # Assign IPs
             assiging_ip(key)
+            subnet = value['subnet']
+            list_of_ips = [str(ip) for ip in IPv4Network(subnet)]
 
 
 def yaml_dict(file: str)-> dict:
