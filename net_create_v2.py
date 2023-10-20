@@ -17,7 +17,7 @@ def ns_create(namespace: str):
     """Check if the namespace exist"""
     run(subprocess_parser(f"sudo ip netns add {namespace}"))
 
-    
+
 def bridger(network: str):
     """Function to create the bridge and bring it up"""
     run(subprocess_parser(f"sudo ip link add name {network}-br type bridge"))
@@ -34,7 +34,7 @@ def network_connector(network: str, source: str, destination: str):
 
 def create_core(network: str):
     """Create the core and NAT"""
-    [ns_create(f"core-{i}") for i in ["rt","h"]]
+    [ns_create(f"core-{i}") for i in ["r","h"]]
     run(subprocess_parser(f"sudo ip link add core2{network} type veth peer name {network}2core"))
     run(subprocess_parser(f"sudo ip link set core2{network} netns core-r"))
     run(subprocess_parser(f"sudo ip link set {network}2core netns {network}-r"))
@@ -65,11 +65,9 @@ def net_creation(dictionary: dict):
         # Host to bridge connection
         network_connector(key,"h","br")
         # Router to bridge
-        network_connector(key,"rt","br")
+        network_connector(key,"r","br")
         # Create connection to core
         create_core(network)
-    
-        # Connect to need to connect to Core and provide IP
 
 
 def yaml_dict(file: str)-> dict:
