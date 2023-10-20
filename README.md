@@ -56,5 +56,22 @@ Before you begin, ensure you have installed the following:
    * Use it to automate some aspect of NFV
 
 ### Our Project
+These are network deployment automations tools.
+We ask the user to specify the name and the subnet of the network.
 
+**This is the Desing:**
 ![](https://raw.githubusercontent.com/hoolies/NetworkAutomationProject/main/Diagram.png)
+
+We will always generate the NAT and the Core. The core will handle the core routing and the NAT will handle the firewall.
+We will also include a DMZ option.
+
+#### How it Works?
+Run the `bootstrap.sh` to make sure the local machine has all the prerequisite.
+The `bootstrap.sh` script is going to run the python script that will create the network.
+At last Ansible will assign the IPs.
+
+#### Python
+The main python script is `net_create_v2.py`
+
+#### Ansible
+There is an Ansible folder that has the playbooks and the templates
