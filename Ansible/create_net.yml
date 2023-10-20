@@ -313,9 +313,6 @@
       command: "sudo ip netns exec crouter ip route add 10.1.3.0/24 via 10.1.5.10"
 
     - name: Configure static routes on the core router
-      command: "sudo ip netns exec crouter ip route add 10.1.4.0/24 via 10.1.5.14"
-
-    - name: Configure static routes on the core router
       command: "sudo ip netns exec crouter ip route add default via 10.1.5.18"
 
     - name: Configure default route on phost
