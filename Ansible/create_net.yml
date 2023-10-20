@@ -300,30 +300,6 @@
     - name: Configure NAT link (NAT -> CROUTER)
       command: "sudo ip addr add 10.1.5.18/30 dev nat2crout"
 
-    - name: Verify Veths
-      command: "sudo ip netns exec phost ip -c link | grep -A 2 phost"
-
-    - name: Verify Veths
-      command: "sudo ip netns exec yhost ip -c link | grep -A 2 yhost"
-
-    - name: Verify Veths
-      command: "sudo ip netns exec ohost ip -c link | grep -A 2 ohost"
-
-    - name: Verify Veths
-      command: "sudo ip netns exec crouter ip -c link | grep -A 5 rout"
-
-    - name: Verify Veths
-      command: "sudo ip netns exec prouter ip -c link | grep -A 2 prout"
-
-    - name: Verify Veths
-      command: "sudo ip netns exec yrouter ip -c link | grep -A 2 yrout"
-
-    - name: Verify Veths
-      command: "sudo ip netns exec orouter ip -c link | grep -A 2 orout"
-
-    - name: Verify Veths in the root namespace
-      command: "ip -c l"
-
 - name: Configure Static and Default Routes
   hosts: localhost
   tasks:
