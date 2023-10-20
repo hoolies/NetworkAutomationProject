@@ -1,6 +1,0 @@
----
-- name: Run net_create_v2
-  hosts: localhost
-  tasks:
-    - name: Run Script
-      command: python3 /path/to/net_create_v2.py
