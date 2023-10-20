@@ -45,30 +45,34 @@ def nat_connections():
     run(subprocess_parser(f"sudo ip link set core2nat netns core"))
 
 
-def net_creation(list_of_dicts: list):
+def net_creation(dictionary: dict):
     """Use other functions to create the network"""
     print(f"Setting up the network")
     # Create Core namespaces
     [ns_create(f"core-{i}") for i in ["r","h"]]
-    for dictionary in list_of_dicts:
-        # print("Your hosts are:", v['hosts'])
-        # print("Your subnet is:", v['subnet'])
-        print("Creating Namespaces for the network, router, bridge and host")
-        # Router
-        ns_create(f"{key}-r")
-        # Host
-        ns_create(f"{key}-h")
-        # Ethernet bridges
-        print(f"Setting Ethernet Bridges")
-        bridger(key)
-        # vETHs
-        print(f"Create vETHs for {key}")
-        # Host to bridge connection
-        network_connector(key,"h","br")
-        # Router to bridge
-        network_connector(key,"r","br")
-        # Create connection to core
-        create_core(network)
+    # Remove the key networks
+    networks_list = dictionary['networks']
+    # Iterate through the nested dictionaries, network is a dictionary
+    for network in networks_list:
+        for key, vaulue in network.items():
+            print(f"Creating Namespaces for:\n\t- Network: {key}\n\t- Router: {key}-r\n\t- Host: {key}-h")
+            # Namespace
+            ns_create(key)
+            # Router
+            ns_create(f"{key}-r")
+            # Host
+            ns_create(f"{key}-h")
+            # Ethernet bridges
+            print(f"Setting Ethernet Bridges")
+            bridger(key)
+            # vETHs
+            print(f"Create vETHs for {key}")
+            # Host to bridge connection
+            network_connector(key,"h","br")
+            # Router to bridge
+            network_connector(key,"r","br")
+            # Create connection to core
+            create_core(network)
 
 
 def yaml_dict(file: str)-> dict:
