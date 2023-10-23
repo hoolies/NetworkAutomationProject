@@ -85,9 +85,9 @@ def net_creation(dictionary: dict):
             # IP forwarding for the network:
             ip_forwarding_per_subnet(key)
             # Assign IPs
-            assiging_ip(key)
-            subnet = value['subnet']
-            list_of_ips = [str(ip) for ip in IPv4Network(subnet)]
+            # assiging_ip(key)
+            # subnet = value['subnet']
+            # list_of_ips = [str(ip) for ip in IPv4Network(subnet)]
 
 
 def yaml_dict(file: str)-> dict:
@@ -100,8 +100,8 @@ def yaml_dict(file: str)-> dict:
 def ip_forwarding_activate():
     run(subprocess_parser(f"sudo sysctl net.bridge.bridge-nf-call-iptables=0"))
     run(subprocess_parser(f"echo 'net.ipv4.ip_forward = 1"))
-    run(subprocess_parser(f"net.ipv6.conf.default.forwarding = 1"))
-    run(subprocess_parser(f"net.ipv6.conf.all.forwarding = 1' | sudo tee /etc/sysctl.d/10-ip-forwarding.conf"))
+    # run(subprocess_parser(f"net.ipv6.conf.default.forwarding = 1"))
+    # run(subprocess_parser(f"net.ipv6.conf.all.forwarding = 1' | sudo tee /etc/sysctl.d/10-ip-forwarding.conf"))
     run(subprocess_parser(f"sudo ip netns exec core-r sysctl -p /etc/sysctl.d/10-ip-forwarding.conf"))
 
 
@@ -153,6 +153,8 @@ def main():
     """Main Function"""
     # Import the file as dictionary
     Networks = yaml_dict("/home/student/Final/topology.yml")
+    # Create core namespace
+    ns_create("core")
     # Use the dictionary 
     net_creation(Networks)
     # Activate IP Forwarding
